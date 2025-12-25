@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository} from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
+import { ExistingEmailException } from './exceptions/exisitng-email-exception.exception';
 
 @Injectable()
 export class UsersService {
@@ -11,6 +12,11 @@ export class UsersService {
     ){}
 
     async create(email:  string, password: string): Promise<User>{
+        const existingEmail = await this.findByEmail(email);
+
+        if(existingEmail){
+            throw new ExistingEmailException(email);
+        }
         const user = this.repo.create({email, password})
         return this.repo.save(user)
     }
@@ -31,7 +37,7 @@ export class UsersService {
     async update(id: number, attrs: Partial<User>): Promise<User>{
         const user = await this.findOne(id);
         if(!user){
-            throw new Error('user not found');
+            throw new NotFoundException('user not found');
         }
         Object.assign(user, attrs);
         return this.repo.save(user);
@@ -39,7 +45,12 @@ export class UsersService {
 
     async remove(id: number){
         const user = await this.findOne(id);
-        if(!user) throw new Error(`User with the id: ${id} does not exist`);
+        if(!user) throw new NotFoundException(`User with the id: ${id} does not exist`);
         return this.repo.remove(user)
     }
+
+    async findByEmail(email: string): Promise<User | null>{
+        return await this.repo.findOne({where: {email}})
+    }
+
 }
