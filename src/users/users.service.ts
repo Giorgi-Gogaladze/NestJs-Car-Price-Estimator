@@ -11,6 +11,10 @@ export class UsersService {
         private readonly repo: Repository<User>
     ){}
 
+    async getAllUsers(): Promise<User[]>{
+        return await this.repo.find();
+    }
+
     async create(email:  string, password: string): Promise<User>{
         const existingEmail = await this.findByEmail(email);
 
