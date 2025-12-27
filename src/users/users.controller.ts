@@ -3,27 +3,26 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { CacheInterceptor } from '../interceptors/cache.interceptor';
-import { SerializeInterceptor } from 'src/interceptors/serialize.interceptor';
+import { Serialize } from 'src/interceptors/serialize.interceptor';
+import { UserDto } from './dtos/user.dto';
 
 @Controller('auth')
+@Serialize(UserDto)
 export class UsersController {
     constructor(private readonly usersService: UsersService){}
 
     @UseInterceptors(CacheInterceptor)
-    @UseInterceptors(SerializeInterceptor)
     @Get('/all')
     getAllUsers(){
         return this.usersService.getAllUsers();
     }
     
-    @UseInterceptors(SerializeInterceptor)
     @UseInterceptors(CacheInterceptor)
     @Get()
     public findAllusers(@Query('email') email: string){
         return this.usersService.find(email)
     }
 
-    @UseInterceptors(SerializeInterceptor)
     @UseInterceptors(CacheInterceptor)
     @Get('/:id')
     public async findUser(@Param('id') id: string){
