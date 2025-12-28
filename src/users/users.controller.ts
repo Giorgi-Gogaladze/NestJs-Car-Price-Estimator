@@ -40,6 +40,11 @@ export class UsersController {
        return this.authService.sigup(body.email, body.password)
     }
 
+    @Post('/signin')
+    public  signin(@Body() body: CreateUserDto){
+       return this.authService.signin(body.email, body.password)
+    }
+
 
     @Delete('/:id')
     public removeUser(@Param('id') id: string){
