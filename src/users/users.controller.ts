@@ -5,11 +5,15 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { CacheInterceptor } from '../interceptors/cache.interceptor';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 @Serialize(UserDto)
 export class UsersController {
-    constructor(private readonly usersService: UsersService){}
+    constructor(
+        private readonly usersService: UsersService,
+        private readonly authService: AuthService,
+    ){}
 
     @UseInterceptors(CacheInterceptor)
     @Get('/all')
@@ -33,7 +37,7 @@ export class UsersController {
 
     @Post('/signup')
     public  createUser(@Body() body: CreateUserDto){
-       return this.usersService.create(body.email, body.password)
+       return this.authService.sigup(body.email, body.password)
     }
 
 
