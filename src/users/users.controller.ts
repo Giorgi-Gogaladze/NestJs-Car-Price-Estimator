@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Patch, Param, Query, Delete, NotFoundException, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, Get, Patch, Param, Query, Delete, NotFoundException, UseInterceptors, Session } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -27,30 +27,35 @@ export class UsersController {
         return this.usersService.find(email)
     }
 
-    @UseInterceptors(CacheInterceptor)
-    @Get('/:id')
-    public async findUser(@Param('id') id: string){
-        const user = await this.usersService.findOne(parseInt(id));
-        if(!user) throw new NotFoundException(`User with the id of ${id} does not exist!`);
-        return user;
+    @Get('/whoami')
+    whoAmI(@Session() session: any){
+        return this.usersService.findOne(session.userId);
     }
-
+    
     @Post('/signup')
-    public  createUser(@Body() body: CreateUserDto){
-       return this.authService.sigup(body.email, body.password)
+    public async createUser(@Body() body: CreateUserDto, @Session() session: any){
+       const user = await this.authService.sigup(body.email, body.password);
+       session.userId = user.id;
+       return user;
     }
 
     @Post('/signin')
-    public  signin(@Body() body: CreateUserDto){
-       return this.authService.signin(body.email, body.password)
+    public async signin(@Body() body: CreateUserDto, @Session() session: any){
+       const user = await this.authService.signin(body.email, body.password);
+       session.userId = user.id;
+       return user;
     }
-
+    
+    @Post('/logout')
+    logout(@Session() session: any){
+        session.userId = null;
+    }
 
     @Delete('/:id')
     public removeUser(@Param('id') id: string){
         return this.usersService.remove(parseInt(id));
     }
-
+    
     @Patch('/:id')
     public updateUser
     (
@@ -59,5 +64,12 @@ export class UsersController {
     ){
         return this.usersService.update(parseInt(id),body);
     }
-
+    @UseInterceptors(CacheInterceptor)
+    @Get('/:id')
+    public async findUser(@Param('id') id: string){
+        const user = await this.usersService.findOne(parseInt(id));
+        if(!user) throw new NotFoundException(`User with the id of ${id} does not exist!`);
+        return user;
+    }
+    
 }
