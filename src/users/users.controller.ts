@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Patch, Param, Query, Delete, NotFoundException, UseInterceptors, Session } from '@nestjs/common';
+import { Body, Controller, Post, Get, Patch, Param, Query, Delete, NotFoundException, UseInterceptors, Session, } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -6,9 +6,13 @@ import { CacheInterceptor } from '../interceptors/cache.interceptor';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
+import { User } from './user.entity';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
 
 @Controller('auth')
 @Serialize(UserDto)
+@UseInterceptors(CurrentUserInterceptor)
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,
@@ -27,9 +31,18 @@ export class UsersController {
         return this.usersService.find(email)
     }
 
+    /* @Get('/whoami')
+    async whoAmI(@Session() session: any){
+        const user = await this.usersService.findOne(session.userId);
+        if(!user){
+            throw new BadRequestException("User doesn't exist!")
+        }
+        return user;
+    } */
+
     @Get('/whoami')
-    whoAmI(@Session() session: any){
-        return this.usersService.findOne(session.userId);
+    whoAmI(@CurrentUser() user: User){
+        return user;
     }
     
     @Post('/signup')
@@ -46,7 +59,7 @@ export class UsersController {
        return user;
     }
     
-    @Post('/logout')
+    @Post('/signout')
     logout(@Session() session: any){
         session.userId = null;
     }

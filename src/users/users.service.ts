@@ -26,8 +26,10 @@ export class UsersService {
     }
 
     async findOne(id: number): Promise<User | null>{
-        const user = await this.repo.findOne({where: {id}});
-        return user;
+        if(!id){
+            return null;
+        }
+        return await this.repo.findOne({where: {id}});
     }
 
     async find(email: string): Promise<User[]>{
