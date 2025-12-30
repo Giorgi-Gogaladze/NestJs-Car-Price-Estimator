@@ -8,11 +8,12 @@ import { UserDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
 import { User } from './user.entity';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { UseGuards } from '@nestjs/common';
+
 
 @Controller('auth')
 @Serialize(UserDto)
-@UseInterceptors(CurrentUserInterceptor)
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,
@@ -31,16 +32,8 @@ export class UsersController {
         return this.usersService.find(email)
     }
 
-    /* @Get('/whoami')
-    async whoAmI(@Session() session: any){
-        const user = await this.usersService.findOne(session.userId);
-        if(!user){
-            throw new BadRequestException("User doesn't exist!")
-        }
-        return user;
-    } */
-
     @Get('/whoami')
+    @UseGuards(AuthGuard)
     whoAmI(@CurrentUser() user: User){
         return user;
     }
@@ -62,6 +55,7 @@ export class UsersController {
     @Post('/signout')
     logout(@Session() session: any){
         session.userId = null;
+        return 'signed out'
     }
 
     @Delete('/:id')
