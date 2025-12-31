@@ -10,7 +10,7 @@ const scrypt = promisify(_scrypt);
 export class AuthService {
     constructor(private readonly usersService: UsersService){}
 
-     async sigup(email: string, password: string): Promise<User>{
+     async signup(email: string, password: string): Promise<User>{
         const users = await this.usersService.find(email);
         if(users.length){
             throw new BadRequestException('Email is in use!')
