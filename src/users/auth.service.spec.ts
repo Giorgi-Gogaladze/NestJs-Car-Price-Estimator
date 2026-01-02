@@ -14,9 +14,17 @@ describe("AuthService", () => {
     let fakeUserService: Partial<UsersService>
     
     beforeEach(async () => {
+        const users: User[] = [];
         fakeUserService = {
-            find: () => Promise.resolve([]),
-            create: (email:string, password: string) => Promise.resolve({id: 1, email, password} as User) 
+            find: (email: string) => {
+                const filteredUsers = users.filter(user => user.email === email);
+                return Promise.resolve(filteredUsers);
+            },
+            create: (email:string, password: string) => {
+               const user =  {id: Math.floor(Math.random() * 9999999), email, password} as User;
+               users.push(user);
+               return Promise.resolve(user);
+            }
         }
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -67,15 +75,16 @@ describe("AuthService", () => {
 
     it('returns a user if correct password is provided', async () => {
         const realpass = '123456'
+        const email = 'email@gmail.com';
+
         const salt = randomBytes(8).toString('hex');
         const hash = (await scrypt(realpass, salt, 32)) as Buffer;
         const password = `${salt}.${hash.toString('hex')}`;
 
-        fakeUserService.find = () => Promise.resolve([{email: "email@gmail.com", password} as User]);
-        const user = await service.signin('test@gmail.com', 'correct-password');
+        fakeUserService.find = () => Promise.resolve([{email, password} as User]);
+        const user = await service.signin(email, realpass);
 
         expect(user).toBeDefined();
-        expect(user.email).toEqual('test@gmail.com')
+        expect(user.email).toEqual(email);
     })
 });
-
