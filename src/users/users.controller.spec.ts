@@ -75,4 +75,81 @@ describe('UsersController', () => {
     expect(result).toEqual(user);
   })
 
+  it('creates a user and sets session userId', async () => {
+    const user = {id: 10, email: 'a@gmail.com'} as User;
+     
+    (fakeAuthService.signup as jest.Mock).mockResolvedValue(user);
+
+    const session = {userId: null};
+
+    const result = await controller.createUser(
+      {email: 'a@gmail.com', password: 'password'},
+      session,
+    )
+
+    expect(fakeAuthService.signup).toHaveBeenCalledWith('a@gmail.com', 'password');
+    expect(session.userId).toEqual(10);
+    expect(result).toEqual(user);
+  })
+
+  it('signs in the user and sets session userId', async() => {
+    const user = {id:1, email: 'gio@gmail.com'} as User;
+    
+    (fakeAuthService.signin as jest.Mock).mockResolvedValue(user);
+
+    const session = {userId: null};
+
+    const result = await controller.signin(
+      {email: 'gio@gmail.com', password: 'password'},
+      session,
+    )
+
+    expect(fakeAuthService.signin).toHaveBeenCalledWith('gio@gmail.com', 'password');
+    expect(session.userId).toEqual(1);
+    expect(result).toEqual(user);
+  })
+
+  it('logs out the user and  removes session userId', () => {
+    const session = {userId: 1};
+
+    const result = controller.logout(session);
+
+    expect(session.userId).toBeNull();
+    expect(result).toEqual('signed out');
+  })
+
+  it('returns user with id', async() => {
+    const user = {id: 5, email: 'gio@gmail.com'} as User;
+
+    (fakeUsersService.findOne as jest.Mock).mockResolvedValueOnce(user);
+
+    const result = await controller.findUser('5');
+
+    expect(fakeUsersService.findOne).toHaveBeenCalledWith(5);
+    expect(result).toEqual(user);
+  })
+
+  it('updates the user', async () => {
+    const updatedUser  = {id: 3, email:'updated@gmail.com'} as User;
+    
+    (fakeUsersService.update as jest.Mock).mockResolvedValue(updatedUser);
+
+    const body = {email: 'updated@gmail.com', password: 'newpassword'};
+
+    const result  = await controller.updateUser(`3`, body);
+
+    expect(fakeUsersService.update).toHaveBeenCalledWith(3, body);
+    expect(result).toEqual(updatedUser)
+  })
+
+
+  it('removes a user', async () => {
+    (fakeUsersService.remove as jest.Mock).mockResolvedValue({success: true});
+
+    const result = await controller.removeUser('4');
+
+    expect(fakeUsersService.remove).toHaveBeenCalledWith(4);
+    expect(result).toEqual({success: true});  
+  })
+
 });

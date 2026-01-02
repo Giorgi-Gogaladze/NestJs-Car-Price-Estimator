@@ -71,6 +71,7 @@ export class UsersController {
     ){
         return this.usersService.update(parseInt(id),body);
     }
+    
     @UseInterceptors(CacheInterceptor)
     @Get('/:id')
     public async findUser(@Param('id') id: string){
