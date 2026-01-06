@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../users/user.entity';
 import { Repository } from 'typeorm';
 import { CreateReportDto } from './dtos/create-report.dto';
 import { Report } from './report.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class ReportsService {
@@ -12,9 +12,14 @@ export class ReportsService {
         private readonly repo: Repository<Report>
     ){}
 
-    create(reportDto: CreateReportDto){
+    async create(reportDto: CreateReportDto, user: User){
         const report  = this.repo.create(reportDto);
-        return this.repo.save(report);
+        report.user = user;
+        const saved = await this.repo.save(report);
+        return this.repo.findOne({
+            where: {id: saved.id},
+            relations: ['user']
+        })
     }
     
 }
