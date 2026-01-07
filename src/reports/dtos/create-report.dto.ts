@@ -5,7 +5,6 @@ import {
     Max,
     IsLatitude,
     IsLongitude,
-    isString
   } from 'class-validator'
 
 export class CreateReportDto {

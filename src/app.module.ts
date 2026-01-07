@@ -36,6 +36,7 @@ const cookieSession = require('cookie-session')
       provide: APP_PIPE,
       useValue: new ValidationPipe({
       whitelist: true,
+      transform: true,
     })
     }
   ],
@@ -50,4 +51,3 @@ export class AppModule {
   }
 }
 
-export class 
