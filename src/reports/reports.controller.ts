@@ -26,9 +26,8 @@ export class ReportsController {
     approveReport(
         @Param('id') id: string, 
         @Body() body: ApproveReportDto,
-        @Session() session: any
     ){
-        return this.reportsService.changeApproval(id, body.approved, session.userId)
+        return this.reportsService.changeApproval(id, body.approved)
     }
 
     @Get()

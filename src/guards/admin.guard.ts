@@ -1,11 +1,14 @@
-import { CanActivate, ExecutionContext } from "@nestjs/common";
+import { CanActivate, ExecutionContext, ForbiddenException } from "@nestjs/common";
 
  export class AdminGuard implements CanActivate {
     canActivate(context: ExecutionContext){
         const request = context.switchToHttp().getRequest();
         if(!request.currentUser){
-            return false;
+            throw new ForbiddenException('you must be logged in')
         }
-        return request.currentUser.admin;
+        if(!request.currentUser.admin){
+            throw new ForbiddenException('Only admin can change report approval status')
+        }
+        return true
     }
  }

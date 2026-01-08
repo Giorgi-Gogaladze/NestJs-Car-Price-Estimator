@@ -23,10 +23,11 @@ export class ReportsService {
         })
     }
 
-    createEstimate({make, model, lng, lat, year, mileage}: GetEstimateDto){
-        return this.repo.createQueryBuilder()
+    async createEstimate({make, model, lng, lat, year, mileage}: GetEstimateDto){
+        const result = await this.repo.createQueryBuilder()
         .select('AVG(price)', 'price')
-        .where('make = :make', { make })
+        .where('approved IS TRUE')
+        .andWhere('make = :make', { make })
         .andWhere('model = :model', {model })
         .andWhere('lng - :lng BETWEEN -5 AND 5', { lng })
         .andWhere('lat - :lat BETWEEN -5 AND 5', { lat })
@@ -34,14 +35,23 @@ export class ReportsService {
         .orderBy('ABS(mileage - :mileage)', 'DESC')
         .setParameters({ mileage })
         .limit(3)
-        .getRawOne()
+        .getRawOne();
+
+        if(!result || !result.price){
+            return {
+                message: 'No such model of car yet. Please add one to help the website grow 🙂',
+            }
+        }
+        return {
+            price: Math.round(result.price)
+        }
     }
 
-    async changeApproval (id: string, approved: boolean, userId: string){
+    async changeApproval (id: string, approved: boolean){
         const report = await this.repo.findOne({where: {
             id: parseInt(id),
-            user:{ id: parseInt(userId)}
         }});
+        
         if(!report) {
             throw new NotFoundException('Report not found or not yours');
         }
